@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# problematic file
+public/images/guy-shocked-how-stupid-his-coworker-is-portrait-stunned-caucasian-male-model-with-moustache-touching-cheek-staring-with-clueless-expression-being-shocked-with-dumb-person.jpg
