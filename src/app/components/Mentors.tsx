@@ -3,6 +3,7 @@
 import React from "react";
 import styled from "styled-components";
 import Link from "next/link";
+import Image from "next/image";
 
 interface CardProps {
   angle: number;
@@ -30,7 +31,7 @@ const Header = styled.div`
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    padding-bottom:80rem;
+    padding-bottom: 80rem;
   }
 `;
 
@@ -104,21 +105,34 @@ const StyledLink = styled(Link)`
   text-decoration: none;
 `;
 
-function Loading() {
+const Mentors: React.FC = () => {
   return (
     <Container>
       <Header>
-        <button>←</button>
+        <StyledLink href="/components/Loading">
+          <button>←</button>
+        </StyledLink>
       </Header>
       <CardContainer>
         <Card angle={-10}>
-          <img src="techconnect/public/images/redjacket.jpg" alt="Mentor 1" />
+          <Image 
+            src="/images/redjacket.jpg" 
+            alt="Mentor 1" 
+            width={150}
+            height={200}
+            style={{ objectFit: 'cover' }}
+          />
         </Card>
         <Card angle={10}>
-          <img src="techconnect/public/images/redjeanjacket.jpg" alt="Mentor 2" />
+          <Image 
+            src="/images/redjeanjacket.jpg" 
+            alt="Mentor 2" 
+            width={150}
+            height={200}
+            style={{ objectFit: 'cover' }}
+          />
         </Card>
       </CardContainer>
-    
       <Pagination>
         <div></div>
         <div></div>
@@ -129,6 +143,6 @@ function Loading() {
       <Title>Finding A Mentor</Title>
     </Container>
   );
-}
+};
 
-export default Loading;
+export default Mentors;

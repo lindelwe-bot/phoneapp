@@ -116,6 +116,14 @@ const MentorMatchContent = styled.div`
   }
 `;
 
+const mentorsa = styled.div`
+display:flex;
+width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    
+`
+
 const PostContainer = styled.div`
   width: 100%;
   max-width: 400px;
@@ -182,6 +190,28 @@ const PostActions = styled.div`
   }
 `;
 
+const FooterItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease-in-out;
+  
+  &:active {
+    transform: scale(1.2);
+  }
+
+  img {
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+  }
+
+  &:hover img {
+    transform: scale(1.1);
+  }
+`;
+
 const Footer = styled.div`
   display: flex;
   justify-content: space-around;
@@ -193,12 +223,7 @@ const Footer = styled.div`
   position: fixed;
   bottom: 0;
   left: 0;
-
-  img {
-    width: 25px;
-    height: 25px;
-    cursor: pointer;
-  }
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 `;
 
 const StyledLink = styled(Link)`
@@ -254,10 +279,10 @@ function Techconnect() {
         </MentorMatchHeader>
         <MentorMatchContent>
           <p>Connect With A Mentor Today!</p>
-          <div>
-            <img src="/images/pexels-henri-mathieu-8348740.jpg" alt="Mentor 1" />
-            <img src="/images/pexels-max-fischer-5212317.jpg" alt="Mentor 2" />
-            <img src="/images/pexels-rdne-7648043.jpg" alt="Mentor 3" />
+          <div className="mentorsa">
+            <img src="/images/afroamerican.jpg" alt="Mentor 1" />
+            <img src="/images/redjeanjacket.jpg" alt="Mentor 2" />
+            <img src="/images/redjacket.jpg" alt="Mentor 3" />
           </div>
         </MentorMatchContent>
       </MentorMatchContainer>
@@ -287,11 +312,21 @@ function Techconnect() {
         </PostActions>
       </PostContainer>
       <Footer>
-        <img src="/images/bell.png" alt="Home" />
-        <img src="/images/bell.png" alt="Search" />
-        <img src="/images/bell.png" alt="Add" />
-        <img src="/images/bell.png" alt="Chat" />
-        <img src="/images/bell.png" alt="Profile" />
+        <FooterItem href="/home">
+          <img src="/images/bell.png" alt="Home" />
+        </FooterItem>
+        <FooterItem href="/search">
+          <img src="/images/bell.png" alt="Search" />
+        </FooterItem>
+        <FooterItem href="/Aiscreen">
+          <img src="/images/chat.png" alt="Chat" />
+        </FooterItem>
+        <FooterItem href="/add">
+          <img src="/images/bell.png" alt="Add" />
+        </FooterItem>
+        <FooterItem href="/profile">
+          <img src="/images/bell.png" alt="Profile" />
+        </FooterItem>
       </Footer>
       <StyledLink href="/components/Community">
         <Button>Next</Button>
