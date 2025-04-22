@@ -1,7 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import { auth, db } from "../firebase/config";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 const Container = styled.div`
   display: flex;
@@ -126,7 +130,105 @@ const Footer = styled.p`
   }
 `;
 
+const ErrorMessage = styled.div`
+  color: #ff0000;
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
+`;
+
+const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const LoadingSpinner = styled.div`
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0077b5;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
 function Sign2() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const validateForm = () => {
+    if (!name.trim()) {
+      setError("Please enter your full name");
+      return false;
+    }
+    if (!email.trim()) {
+      setError("Please enter your email");
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Store additional user data in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        name: name,
+        email: email,
+        createdAt: new Date().toISOString(),
+      });
+
+      router.push("/components/Interest");
+    } catch (error) {
+      console.error("Error signing up:", error);
+      if (error.code === "auth/email-already-in-use") {
+        setError("Email is already in use");
+      } else if (error.code === "auth/invalid-email") {
+        setError("Invalid email address");
+      } else if (error.code === "auth/weak-password") {
+        setError("Password is too weak");
+      } else {
+        setError("An error occurred during sign up");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Container>
       <Header>
@@ -137,18 +239,39 @@ function Sign2() {
       <InputContainer>
         <Input>
           <span>👤</span>
-          <input type="text" required placeholder="Enter Full Name..." />
+          <input 
+            type="text" 
+            required 
+            placeholder="Enter Full Name..." 
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </Input>
         <Input>
           <span>📧</span>
-          <input type="email" required placeholder="Enter Email..." />
+          <input 
+            type="email" 
+            required 
+            placeholder="Enter Email..." 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </Input>
         <Input>
           <span>🔒</span>
-          <input type="password" required placeholder="Enter Password..." />
+          <input 
+            type="password" 
+            required 
+            placeholder="Enter Password..." 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </Input>
       </InputContainer>
-      <Button>Sign Up</Button>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      <Button onClick={handleSignUp} disabled={loading}>
+        {loading ? "Signing Up..." : "Sign Up"}
+      </Button>
       <Divider>Or Sign Up With</Divider>
       <SocialIcons>
         <img src="/images/facebook.png" alt="Facebook" />
@@ -156,8 +279,13 @@ function Sign2() {
         <img src="/images/apple.png" alt="Apple" />
       </SocialIcons>
       <Footer>
-        Already have an account? <a href="/login">Login</a>
+        Already have an account? <a href="/components/Login">Login</a>
       </Footer>
+      {loading && (
+        <LoadingOverlay>
+          <LoadingSpinner />
+        </LoadingOverlay>
+      )}
     </Container>
   );
 }

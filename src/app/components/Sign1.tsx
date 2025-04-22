@@ -3,7 +3,7 @@
 import React from "react";
 import styled from "styled-components";
 import Link from "next/link";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const Container = styled.div`
   display: flex;
@@ -60,28 +60,29 @@ const Button = styled.button`
   }
 `;
 
-const IconContainer = styled.div`
-  position: relative;
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
-`;
-
 export default function Sign1() {
+  const router = useRouter();
+
+  const handleSignUp = (e) => {
+    e.preventDefault();
+    router.push("/components/Sign2");
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    router.push("/components/Login");
+  };
+
   return (
     <Container>
       <Title>Tech Connect</Title>
       <ButtonContainer>
-        <StyledLink href="/components/Interest">
-          <Button>
-            Sign Up
-          </Button>
-        </StyledLink>
-        <StyledLink href="/components/Login">
-          <Button>
-            Login
-          </Button>
-        </StyledLink>
+        <Button onClick={handleSignUp}>
+          Sign Up
+        </Button>
+        <Button onClick={handleLogin}>
+          Login
+        </Button>
       </ButtonContainer>
     </Container>
   );

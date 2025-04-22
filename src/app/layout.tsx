@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./components/ClientLayout";
+import { AuthProvider } from "./context/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,7 +27,9 @@ export default function RootLayout({
         className={`${inter.variable} font-sans antialiased min-h-screen max-w-[100vw] overflow-x-hidden`}
         suppressHydrationWarning
       >
-        <ClientLayout>{children}</ClientLayout>
+        <AuthProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </AuthProvider>
       </body>
     </html>
   );

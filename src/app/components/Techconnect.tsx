@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
-import styled from "styled-components";
 import Link from "next/link";
+import styled from "styled-components";
 
 const Container = styled.div`
   display: flex;
@@ -116,13 +115,11 @@ const MentorMatchContent = styled.div`
   }
 `;
 
-const mentorsa = styled.div`
-display:flex;
-width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    
-`
+const MentorsContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+`;
 
 const PostContainer = styled.div`
   width: 100%;

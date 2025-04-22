@@ -1,9 +1,19 @@
 "use client";
 import React, { useState } from "react";
 import styled from "styled-components";
-import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  setPersistence, 
+  browserLocalPersistence, 
+  browserSessionPersistence,
+  GoogleAuthProvider,
+  signInWithPopup,
+  FacebookAuthProvider
+} from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { auth } from "../firebase/config";
 
 const Container = styled.div`
   display: flex;
@@ -183,6 +193,48 @@ const StyledLink = styled(Link)`
   text-decoration: none;
 `;
 
+const SocialButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #0077b5;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -191,7 +243,6 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
-  const auth = getAuth();
 
   const getErrorMessage = (error: any) => {
     switch (error.code) {
@@ -205,6 +256,10 @@ function Login() {
         return "Too many failed attempts. Please try again later";
       case "auth/network-request-failed":
         return "Network error. Please check your connection";
+      case "auth/popup-closed-by-user":
+        return "Sign in was cancelled";
+      case "auth/account-exists-with-different-credential":
+        return "An account already exists with this email";
       default:
         return "An error occurred. Please try again";
     }
@@ -216,10 +271,29 @@ function Login() {
     setError("");
     
     try {
-      // Set persistence based on remember me option
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/components/Events");
+    } catch (error: any) {
+      setError(getErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    setLoading(true);
+    setError("");
+    
+    try {
+      let authProvider;
+      if (provider === 'google') {
+        authProvider = new GoogleAuthProvider();
+      } else {
+        authProvider = new FacebookAuthProvider();
+      }
       
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await signInWithPopup(auth, authProvider);
       router.push("/components/Events");
     } catch (error: any) {
       setError(getErrorMessage(error));
@@ -239,7 +313,15 @@ function Login() {
       </Header>
       <Title>Tech Connect</Title>
       <Icon src="/images/bulb.png" alt="Light Bulb Icon" />
-      <InputContainer>
+      
+      {error && (
+        <ErrorContainer>
+          <ErrorIcon>⚠️</ErrorIcon>
+          <ErrorText>{error}</ErrorText>
+        </ErrorContainer>
+      )}
+
+      <InputContainer onSubmit={handleLogin}>
         <Input>
           <span>👤</span>
           <input 
@@ -248,52 +330,53 @@ function Login() {
             placeholder="Enter Email..." 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
           />
         </Input>
         <Input>
           <span>🔒</span>
           <input 
             type={showPassword ? "text" : "password"} 
-            placeholder="********" 
+            required 
+            placeholder="Enter Password..." 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
           />
-          <ToggleButton onClick={togglePasswordVisibility} disabled={loading}>
+          <button type="button" onClick={togglePasswordVisibility}>
             {showPassword ? "👁️" : "👁️‍🗨️"}
-          </ToggleButton>
+          </button>
         </Input>
-        {error && (
-          <ErrorContainer>
-            <ErrorIcon>⚠️</ErrorIcon>
-            <ErrorText>{error}</ErrorText>
-          </ErrorContainer>
-        )}
+        
         <RememberMeContainer>
-          <Checkbox
-            type="checkbox"
+          <Checkbox 
+            type="checkbox" 
             id="rememberMe"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            disabled={loading}
           />
           <RememberMeLabel htmlFor="rememberMe">Remember me</RememberMeLabel>
         </RememberMeContainer>
-      </InputContainer>
-      <StyledLink href="/components/Interest">
-        <Button onClick={handleLogin} disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+
+        <Button type="submit" disabled={loading}>
+          {loading ? <LoadingSpinner /> : "Login"}
         </Button>
-      </StyledLink>
-      <Divider>Or Log In With</Divider>
+      </InputContainer>
+
+      <Divider>or continue with</Divider>
+
       <SocialIcons>
-        <img src="/images/ico-facebook.svg" alt="Facebook" />
-        <img src="/images/google.png" alt="Google" />
-        <img src="/images/apple.png" alt="Apple" />
+        <SocialButton onClick={() => handleSocialLogin('google')}>
+          <img src="/images/google.png" alt="Google" />
+          Google
+        </SocialButton>
+        <SocialButton onClick={() => handleSocialLogin('facebook')}>
+          <img src="/images/facebook.png" alt="Facebook" />
+          Facebook
+        </SocialButton>
       </SocialIcons>
+
       <Footer>
-        Don't have an account? <Link href="/components/Interest">Sign up</Link>
+        Don't have an account?{" "}
+        <StyledLink href="/components/Sign1">Sign up</StyledLink>
       </Footer>
     </Container>
   );
